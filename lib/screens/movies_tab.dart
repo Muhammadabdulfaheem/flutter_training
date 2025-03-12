@@ -22,7 +22,7 @@ class MoviesTab extends StatelessWidget {
             String? errorMessage =
                 apiProvider.upcomingMovies.error?.isNotEmpty ?? false
                     ? apiProvider.upcomingMovies.error
-                    : apiProvider.nowPlayingMovies.error ?? "";
+                    : apiProvider.nowPlayingMovies.error ?? "Faheem";
 
             if (isLoading) {
               return Center(child: CircularProgressIndicator());
