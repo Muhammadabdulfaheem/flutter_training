@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_training_project/providers.dart/bottom_nav_provider.dart';
-import 'package:flutter_training_project/screens/home_tab.dart';
+import 'package:flutter_training_project/screens/home/home_tab.dart';
+import 'package:flutter_training_project/screens/movies/movies_tab.dart';
 import 'package:flutter_training_project/screens/profile_tab.dart';
-import 'package:flutter_training_project/screens/movies_tab.dart';
 import 'package:flutter_training_project/screens/search_tab.dart';
 import 'package:flutter_training_project/utils/constants/app_colors.dart';
 import 'package:provider/provider.dart';
 
-class MainTabScreen extends StatefulWidget {
-  const MainTabScreen({super.key});
+class Tabbar extends StatefulWidget {
+  const Tabbar({super.key});
 
   @override
-  State<MainTabScreen> createState() => _MainTabScreenState();
+  State<Tabbar> createState() => _MainTabScreenState();
 }
 
-class _MainTabScreenState extends State<MainTabScreen> {
+class _MainTabScreenState extends State<Tabbar> {
   final List<Widget> _tabs = [
     HomeTab(),
     SearchTab(),

@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_training_project/networking/api_services.dart';
+import 'package:flutter_training_project/networking/base_api_client.dart';
 import 'package:flutter_training_project/providers.dart/home_api_provider.dart';
 import 'package:flutter_training_project/providers.dart/bottom_nav_provider.dart';
 import 'package:flutter_training_project/providers.dart/remot_config_provider.dart';
 import 'package:flutter_training_project/providers.dart/search_tab_api_provider.dart';
 import 'package:flutter_training_project/routing/app_router.dart';
+import 'package:flutter_training_project/screens/movies/bloc/movies_cubit.dart';
+import 'package:flutter_training_project/utils/constants/app_config_helper.dart';
 import 'package:flutter_training_project/utils/constants/app_theme.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -22,7 +27,9 @@ void main() async {
   String name = dotenv.env['NAME'] ?? 'Ali';
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  print(name);
+  final appConfig = AppConfigService();
+  final baseApiClient = BaseApiClient(baseUrl: appConfig.baseURL);
+  final apiServices = ApiServices(baseApiClient);
 
   runApp(
     EasyLocalization(
@@ -35,11 +42,21 @@ void main() async {
         providers: [
           ChangeNotifierProvider(create: (context) => RemotConfigProvider()),
           ChangeNotifierProvider(create: (context) => BottomNavProvider()),
-          ChangeNotifierProvider(create: (context) => HomeApiProvider()),
-          ChangeNotifierProvider(create: (context) => SearchTabApiProvider()),
+          // ChangeNotifierProvider(create: (context) => HomeApiProvider()),
+          // ChangeNotifierProvider(create: (context) => SearchTabApiProvider()),
         ],
 
-        child: MyApp(),
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create:
+                  (context) => MoviesCubit(
+                    ApiServices(BaseApiClient(baseUrl: appConfig.baseURL)),
+                  ),
+            ),
+          ],
+          child: MyApp(),
+        ),
       ),
     ),
   );
@@ -55,7 +72,7 @@ class MyApp extends StatelessWidget {
       supportedLocales: context.supportedLocales,
       locale: context.locale,
       theme: AppTheme.lightTheme,
-      routerConfig: AppRouter.router,
+      routerConfig: AppRouter.createRouter(),
       debugShowCheckedModeBanner: false,
     );
   }
