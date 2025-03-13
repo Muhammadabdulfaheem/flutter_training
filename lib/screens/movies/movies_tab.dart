@@ -14,11 +14,6 @@ class MoviesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<MoviesCubit>();
-    if (cubit.state is MoviesInitial) {
-      cubit.fetchMovies();
-    }
-
     return Scaffold(
       body: SafeArea(
         child: Stack(

@@ -1,10 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_training_project/screens/tabbar/bloc/tabbar_state.dart';
 
-class TabbarCubit extends Cubit<TabbarState> {
-  TabbarCubit() : super(TabbarInitial());
+class TabbarCubit extends Cubit<int> {
+  TabbarCubit() : super(0);
 
   void updatedIndex(int index) {
-    emit(TabbarTaped(index));
+    emit(index);
   }
 }

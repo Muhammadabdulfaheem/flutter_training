@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_training_project/networking/api_services.dart';
 import 'package:flutter_training_project/networking/base_api_client.dart';
-import 'package:flutter_training_project/providers.dart/bottom_nav_provider.dart';
-import 'package:flutter_training_project/providers.dart/remot_config_provider.dart';
 import 'package:flutter_training_project/routing/app_router.dart';
 import 'package:flutter_training_project/screens/movies/bloc/fileUploading/file_uploading_cubit.dart';
 import 'package:flutter_training_project/screens/movies/bloc/movies/movies_cubit.dart';
+import 'package:flutter_training_project/screens/tabbar/bloc/tabbar_cubit.dart';
+import 'package:flutter_training_project/services/remotConfig/remote_config_cubit.dart';
 import 'package:flutter_training_project/utils/constants/app_config_helper.dart';
 import 'package:flutter_training_project/utils/constants/app_theme.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -14,57 +14,52 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get_storage/get_storage.dart';
 import 'firebase_options.dart';
-import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await Firebase.initializeApp();
   await EasyLocalization.ensureInitialized();
   await GetStorage.init();
 
   await dotenv.load(fileName: ".env");
-  String name = dotenv.env['NAME'] ?? 'Ali';
+  // String name = dotenv.env['NAME'] ?? 'Ali';
+  runApp(const RootApp());
+}
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  final appConfig = AppConfigService();
-  final baseApiClient = BaseApiClient(baseUrl: appConfig.baseURL);
-  final apiServices = ApiServices(baseApiClient);
+class RootApp extends StatelessWidget {
+  const RootApp({super.key});
 
-  runApp(
-    EasyLocalization(
+  @override
+  Widget build(BuildContext context) {
+    final appConfig = AppConfigService();
+
+    final baseApiClient = BaseApiClient(baseUrl: appConfig.baseURL);
+    final platziApiClient = BaseApiClient(baseUrl: appConfig.platziBaseURL);
+
+    final apiServices = ApiServices(baseApiClient);
+    final platziApiServices = ApiServices(platziApiClient);
+
+    return EasyLocalization(
       supportedLocales: [Locale('en'), Locale('ar')],
       path: 'assets/translations',
       startLocale: Locale('en'),
       fallbackLocale: Locale('en'),
 
-      child: MultiProvider(
+      child: MultiBlocProvider(
         providers: [
-          ChangeNotifierProvider(create: (context) => RemotConfigProvider()),
-          ChangeNotifierProvider(create: (context) => BottomNavProvider()),
+          BlocProvider(create: (_) => TabbarCubit()),
+          BlocProvider(
+            create: (_) => RemoteConfigCubit()..fetchRemoteConfigData(),
+          ),
+          BlocProvider(create: (_) => MoviesCubit(apiServices)..fetchMovies()),
+          BlocProvider(create: (_) => FileUploadingCubit(platziApiServices)),
         ],
-
-        child: MultiBlocProvider(
-          providers: [
-            BlocProvider(
-              create:
-                  (context) => MoviesCubit(
-                    ApiServices(BaseApiClient(baseUrl: appConfig.baseURL)),
-                  ),
-            ),
-            BlocProvider(
-              create:
-                  (context) => FileUploadingCubit(
-                    ApiServices(
-                      BaseApiClient(baseUrl: appConfig.platziBaseURL),
-                    ),
-                  ),
-            ),
-          ],
-          child: MyApp(),
-        ),
+        child: MyApp(),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class MyApp extends StatelessWidget {
