@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_training_project/networking/api_services.dart';
 import 'package:flutter_training_project/networking/base_api_client.dart';
-import 'package:flutter_training_project/providers.dart/home_api_provider.dart';
 import 'package:flutter_training_project/providers.dart/bottom_nav_provider.dart';
 import 'package:flutter_training_project/providers.dart/remot_config_provider.dart';
-import 'package:flutter_training_project/providers.dart/search_tab_api_provider.dart';
 import 'package:flutter_training_project/routing/app_router.dart';
-import 'package:flutter_training_project/screens/movies/bloc/movies_cubit.dart';
+import 'package:flutter_training_project/screens/movies/bloc/fileUploading/file_uploading_cubit.dart';
+import 'package:flutter_training_project/screens/movies/bloc/movies/movies_cubit.dart';
 import 'package:flutter_training_project/utils/constants/app_config_helper.dart';
 import 'package:flutter_training_project/utils/constants/app_theme.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -42,8 +41,6 @@ void main() async {
         providers: [
           ChangeNotifierProvider(create: (context) => RemotConfigProvider()),
           ChangeNotifierProvider(create: (context) => BottomNavProvider()),
-          // ChangeNotifierProvider(create: (context) => HomeApiProvider()),
-          // ChangeNotifierProvider(create: (context) => SearchTabApiProvider()),
         ],
 
         child: MultiBlocProvider(
@@ -52,6 +49,14 @@ void main() async {
               create:
                   (context) => MoviesCubit(
                     ApiServices(BaseApiClient(baseUrl: appConfig.baseURL)),
+                  ),
+            ),
+            BlocProvider(
+              create:
+                  (context) => FileUploadingCubit(
+                    ApiServices(
+                      BaseApiClient(baseUrl: appConfig.platziBaseURL),
+                    ),
                   ),
             ),
           ],
