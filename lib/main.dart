@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_training_project/graphql/graphql_service.dart';
+import 'package:flutter_training_project/graphql/product_cubit.dart';
+import 'package:flutter_training_project/graphql/queries/collection_query.dart';
 import 'package:flutter_training_project/networking/api_services.dart';
 import 'package:flutter_training_project/networking/base_api_client.dart';
 import 'package:flutter_training_project/routing/app_router.dart';
@@ -25,7 +28,31 @@ void main() async {
 
   await dotenv.load(fileName: ".env");
   // String name = dotenv.env['NAME'] ?? 'Ali';
+  fetchCollections();
   runApp(const RootApp());
+}
+
+void fetchCollections() async {
+  final graphQLService = GraphQLService();
+  final response = await graphQLService.performQuery(CollectionsQuery);
+
+  final data = response.data;
+  final products = data?['products']?['edges'] ?? [];
+
+  for (var productEdge in products) {
+    final product = productEdge['productDetails'];
+    print('Product title: ${product['title']}');
+
+    final productCollection = product['relatedCollections']['edges'];
+
+    for (var proCollection in productCollection) {
+      final collection = proCollection['collectionInfo'];
+      final imageUrl = collection['image']?['url'];
+      final altText = collection['image']?['altText'];
+      print('Collection Image: $imageUrl');
+      print('Alt Text: $altText');
+    }
+  }
 }
 
 class RootApp extends StatelessWidget {
@@ -41,6 +68,8 @@ class RootApp extends StatelessWidget {
     final apiServices = ApiServices(baseApiClient);
     final platziApiServices = ApiServices(platziApiClient);
 
+    final graphQlService = GraphQLService();
+
     return EasyLocalization(
       supportedLocales: [Locale('en'), Locale('ar')],
       path: 'assets/translations',
@@ -55,6 +84,12 @@ class RootApp extends StatelessWidget {
           ),
           BlocProvider(create: (_) => MoviesCubit(apiServices)..fetchMovies()),
           BlocProvider(create: (_) => FileUploadingCubit(platziApiServices)),
+          //graphQL cubit
+          BlocProvider(
+            create:
+                (_) =>
+                    ProductCollectionCubit(graphQlService)..fetchCollections(),
+          ),
         ],
         child: MyApp(),
       ),
